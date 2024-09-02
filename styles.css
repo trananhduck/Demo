@@ -1,0 +1,68 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+#matrix {
+    display: grid;
+    grid-template-columns: repeat(5, 50px); /* Adjust the number of columns */
+    grid-template-rows: repeat(5, 50px); /* Adjust the number of rows */
+
+}
+
+.cell {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid black; /* Add border to each cell */
+}
+
+.cell.white {
+    background-color: white;
+}
+
+.cell.black {
+    background-color: black;
+}
+
+.cell.red {
+    background-color: red;
+}
+
+.cell.yellow {
+    background-color: yellow;
+}
+
+.cell.green {
+    background-color: green;
+}
+
+.circle {
+    width: 40px;            /* Circle size */
+    height: 40px;           /* Circle size */
+    border-radius: 50%;     /* Make it circular */
+    border: 2px solid white; /* 2px white border */
+    position: absolute;     /* Positioned relative to the cell */
+    top: 50%;               /* Center circle vertically within cell */
+    left: 50%;              /* Center circle horizontally within cell */
+    transform: translate(-50%, -50%); /* Adjust for exact center positioning */
+}
+
+.circle.red {
+    background-color: red;
+}
+
+.circle.yellow {
+    background-color: yellow;
+}
+
+.circle.green {
+    background-color: green;
+}
