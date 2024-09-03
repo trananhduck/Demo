@@ -6,52 +6,80 @@ const matrixData = [
 ];
 
 const matrixContainer = document.getElementById('matrix');
+const timeDisplay = document.getElementById('time');
+const movesDisplay = document.getElementById('moves');
+const resetButton = document.getElementById('reset');
+const resumeButton = document.getElementById('resume');
+const backButton = document.getElementById('back');
+const victoryModal = document.getElementById('victory-modal');
+const resumeModal = document.getElementById('resume-modal');
+const continueButton = document.getElementById('continue');
+const levelSelectionButton = document.getElementById('level-selection');
+const backToLevelButton = document.getElementById('back-to-level');
 
-// Set the grid template based on the matrix size
-matrixContainer.style.gridTemplateColumns = `repeat(${matrixData[0].length}, 50px)`; // Ensure cell size matches CSS
-matrixContainer.style.gridTemplateRows = `repeat(${matrixData.length}, 50px)`; // Ensure cell size matches CSS
-
-// Initial positions of the circles
 let circles = [
     { x: 3, y: 0, color: 'red' },
     { x: 1, y: 0, color: 'yellow' },
     { x: 1, y: 2, color: 'green' }
 ];
 
-// Create the cells for the matrix
-matrixData.forEach((row, rowIndex) => {
-    row.forEach((cellValue, colIndex) => {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
+let moveCount = 0;
+let startTime;
+let interval;
 
-        // Apply color based on the value of the cell
-        switch (cellValue) {
-            case 0:
-                cell.classList.add('white');
-                break;
-            case 1:
-                cell.classList.add('black');
-                break;
-            case 'A':
-                cell.classList.add('red');
-                break;
-            case 'B':
-                cell.classList.add('yellow');
-                break;
-            case 'C':
-                cell.classList.add('green');
-                break;
-            default:
-                break;
-        }
+function initialize() {
+    matrixContainer.innerHTML = '';
+    circles = [
+        { x: 3, y: 0, color: 'red' },
+        { x: 1, y: 0, color: 'yellow' },
+        { x: 1, y: 2, color: 'green' }
+    ];
+    moveCount = 0;
+    document.getElementById('moves').textContent = `Moves: ${moveCount}`;
+    if (startTime) {
+        clearInterval(interval);
+        startTime = new Date();
+        interval = setInterval(updateTime, 1000);
+    } else {
+        startTime = new Date();
+        interval = setInterval(updateTime, 1000);
+    }
+    renderMatrix();
+    renderCircles();
+}
 
-        matrixContainer.appendChild(cell);
+function renderMatrix() {
+    matrixData.forEach((row, rowIndex) => {
+        row.forEach((cellValue, colIndex) => {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+
+            switch (cellValue) {
+                case 0:
+                    cell.classList.add('white');
+                    break;
+                case 1:
+                    cell.classList.add('black');
+                    break;
+                case 'A':
+                    cell.classList.add('red');
+                    break;
+                case 'B':
+                    cell.classList.add('yellow');
+                    break;
+                case 'C':
+                    cell.classList.add('green');
+                    break;
+                default:
+                    break;
+            }
+
+            matrixContainer.appendChild(cell);
+        });
     });
-});
+}
 
-// Function to render circles at their current positions
 function renderCircles() {
-    // Clear existing circles
     document.querySelectorAll('.circle').forEach(circle => circle.remove());
 
     circles.forEach(circle => {
@@ -62,31 +90,58 @@ function renderCircles() {
         circleElement.classList.add('circle', circle.color);
         cell.appendChild(circleElement);
     });
+
+    checkVictory();
 }
 
-// Check if a cell is available for moving into
+function updateTime() {
+    const now = new Date();
+    const elapsed = Math.floor((now - startTime) / 1000);
+    timeDisplay.textContent = `Time: ${elapsed}s`;
+}
+
 function isCellAvailable(x, y) {
-    // Check matrix bounds
     if (x < 0 || x >= matrixData.length || y < 0 || y >= matrixData[0].length) {
         return false;
     }
 
-    // Check if the cell is not a black obstacle
     if (matrixData[x][y] === 1) {
         return false;
     }
 
-    // Check if another circle is already in the cell
-    for (let i = 0; i < circles.length; i++) {
-        if (circles[i].x === x && circles[i].y === y) {
-            return false;
-        }
+    if (circles.some(circle => circle.x === x && circle.y === y)) {
+        return false;
     }
 
     return true;
 }
 
-// Handle arrow key movements
+let victoryCheckTimeout = null; // To store the timeout ID
+
+function checkVictory() {
+    // Clear any existing timeout
+    if (victoryCheckTimeout) {
+        clearTimeout(victoryCheckTimeout);
+    }
+
+    // Set a timeout to check victory after 1 second
+    victoryCheckTimeout = setTimeout(() => {
+        let won = true;
+        circles.forEach(circle => {
+            const cellIndex = circle.x * matrixData[0].length + circle.y;
+            const cell = matrixContainer.children[cellIndex];
+            if (!cell.classList.contains(circle.color)) {
+                won = false;
+            }
+        });
+
+        if (won) {
+            clearInterval(interval);
+            victoryModal.style.display = 'flex';
+        }
+    }, 1000); // Check after 1 second
+}
+
 document.addEventListener('keydown', (event) => {
     const keyName = event.key;
 
@@ -108,19 +163,54 @@ document.addEventListener('keydown', (event) => {
                 newY = circle.y + 1;
                 break;
             default:
-                return; // Ignore other keys
+                return;
         }
 
-        // Check if the new position is available
         if (isCellAvailable(newX, newY)) {
             circle.x = newX;
             circle.y = newY;
+            moveCount++;
+            document.getElementById('moves').textContent = `Moves: ${moveCount}`;
+            renderCircles();
         }
     });
-
-    // Re-render circles after updating positions
-    renderCircles();
 });
 
-// Initial render of circles
-renderCircles();
+resetButton.addEventListener('click', () => {
+    initialize();
+});
+
+resumeButton.addEventListener('click', () => {
+    resumeModal.style.display = 'flex';
+});
+
+continueButton.addEventListener('click', () => {
+    resumeModal.style.display = 'none';
+    if (!startTime) {
+        startTime = new Date();
+        interval = setInterval(updateTime, 1000);
+    }
+});
+
+levelSelectionButton.addEventListener('click', () => {
+    window.location.href = 'level-selection.html'; // Modify as needed for your level selection page
+});
+
+backButton.addEventListener('click', () => {
+    window.location.href = 'level-selection.html'; // Modify as needed for your level selection page
+});
+
+backToLevelButton.addEventListener('click', () => {
+    window.location.href = 'level-selection.html'; // Modify as needed for your level selection page
+});
+
+window.addEventListener('click', (event) => {
+    if (event.target === resumeModal) {
+        resumeModal.style.display = 'none';
+    }
+    if (event.target === victoryModal) {
+        victoryModal.style.display = 'none';
+    }
+});
+
+initialize();
