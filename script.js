@@ -1,216 +1,311 @@
-const matrixData = [
-    ['C', 1, 0, 'A'],
-    [0, 0, 0, 1],
-    [0, 0, 1, 0],
-    [0, 0, 0, 'B']
+// Constants
+const CELL_TYPES = {
+    EMPTY: 0,
+    WALL: 1,
+    RED: 'A',
+    YELLOW: 'B',
+    GREEN: 'C',
+    ORANGE: 'D',
+    PURPLE: 'E',
+    BLUE: 'F',
+};
+
+// Game state
+let currentLevel, circles, moveCount, startTime, elapsedTime = 0, interval, isPaused = false;
+
+// DOM elements
+const elements = {
+    matrixContainer: document.getElementById('matrix'),
+    timeDisplay: document.getElementById('time'),
+    movesDisplay: document.getElementById('moves'),
+    resetButton: document.getElementById('reset'),
+    resumeButton: document.getElementById('resume'),
+    backButton: document.getElementById('back'),
+    victoryModal: document.getElementById('victory-modal'),
+    resumeModal: document.getElementById('resume-modal'),
+    continueButton: document.getElementById('continue'),
+    levelSelectionButton: document.getElementById('level-selection'),
+    backToLevelButton: document.getElementById('back-to-level'),
+    levelDisplay: document.getElementById('level-display')
+};
+
+// Level configurations
+const levels = [
+    {
+        matrix: [
+            ['C', 1, 0, 'A'],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0],
+            [0, 0, 0, 'B']
+        ],
+        initialCircles: [
+            { x: 3, y: 0, color: 'red' },
+            { x: 1, y: 0, color: 'yellow' },
+            { x: 1, y: 2, color: 'green' }
+        ]
+    },
+    {
+        matrix: [
+            [0, 'C', 1, 0, 'A'],
+            [0, 0, 0, 1, 0],
+            ['B', 0, 1, 0, 0],
+            [0, 0, 'D', 0, 1],
+            [1, 0, 0, 0, 0]
+        ],
+        initialCircles: [
+            { x: 1, y: 2, color: 'red' },
+            { x: 2, y: 4, color: 'yellow' },
+            { x: 3, y: 1, color: 'green' },
+            { x: 4, y: 4, color: 'orange' }
+        ]
+    },
+    {
+        matrix: [
+            [0, 'D', 1, 0, 0, 'A'],
+            [0, 1, 0, 0, 1, 0],
+            [0, 0, 0, 1, 0, "C"],
+            [1, 0, 1, 0, 0, 1],
+            [0, 'B', 0, 0, 1, 0],
+            [0, 1, 0, 0, 0, 0]
+        ],
+        initialCircles: [
+            { x: 2, y: 1, color: 'red' },
+            { x: 2, y: 4, color: 'yellow' },
+            { x: 5, y: 5, color: 'green' },
+            { x: 3, y: 4, color: 'orange' },
+        ]
+    },
+    {
+        matrix: [
+            [0, 'C', 1, 0, 'D', 0, 0, 0],
+            [0, 1, 0, 0, 1, 0, 1, 1],
+            [0, 'B', 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 1, 0, 1, 1],
+            [0, 1, 0, 0, 0, 'E', 1, 0],
+            [1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 'A', 0, 1, 0, 0, 0, 'F']
+        ],
+        initialCircles: [
+            { x: 2, y: 1, color: 'red' },
+            { x: 6, y: 2, color: 'yellow' },
+            { x: 5, y: 5, color: 'green' },
+            { x: 3, y: 4, color: 'orange' },
+            { x: 0, y: 7, color: 'purple' },
+            { x: 3, y: 7, color: 'blue' },
+        ]
+    }
 ];
 
-const matrixContainer = document.getElementById('matrix');
-const timeDisplay = document.getElementById('time');
-const movesDisplay = document.getElementById('moves');
-const resetButton = document.getElementById('reset');
-const resumeButton = document.getElementById('resume');
-const backButton = document.getElementById('back');
-const victoryModal = document.getElementById('victory-modal');
-const resumeModal = document.getElementById('resume-modal');
-const continueButton = document.getElementById('continue');
-const levelSelectionButton = document.getElementById('level-selection');
-const backToLevelButton = document.getElementById('back-to-level');
-
-let circles = [
-    { x: 3, y: 0, color: 'red' },
-    { x: 1, y: 0, color: 'yellow' },
-    { x: 1, y: 2, color: 'green' }
-];
-
-let moveCount = 0;
-let startTime;
-let interval;
-
-function initialize() {
-    matrixContainer.innerHTML = '';
-    circles = [
-        { x: 3, y: 0, color: 'red' },
-        { x: 1, y: 0, color: 'yellow' },
-        { x: 1, y: 2, color: 'green' }
-    ];
+function initializeLevel(levelIndex, resetTime = false) {
+    currentLevel = levels[levelIndex];
+    circles = JSON.parse(JSON.stringify(currentLevel.initialCircles)); // Deep copy
     moveCount = 0;
-    document.getElementById('moves').textContent = `Moves: ${moveCount}`;
-    if (startTime) {
-        clearInterval(interval);
-        startTime = new Date();
-        interval = setInterval(updateTime, 1000);
+    updateMoveDisplay();
+    if (resetTime) {
+        resetTimer();
     } else {
-        startTime = new Date();
-        interval = setInterval(updateTime, 1000);
+        startTimer();
     }
     renderMatrix();
     renderCircles();
+    updateLevelDisplay(levelIndex);
 }
 
 function renderMatrix() {
-    matrixData.forEach((row, rowIndex) => {
-        row.forEach((cellValue, colIndex) => {
-            const cell = document.createElement('div');
-            cell.classList.add('cell');
-
-            switch (cellValue) {
-                case 0:
-                    cell.classList.add('white');
-                    break;
-                case 1:
-                    cell.classList.add('black');
-                    break;
-                case 'A':
-                    cell.classList.add('red');
-                    break;
-                case 'B':
-                    cell.classList.add('yellow');
-                    break;
-                case 'C':
-                    cell.classList.add('green');
-                    break;
-                default:
-                    break;
-            }
-
-            matrixContainer.appendChild(cell);
-        });
-    });
+    const matrixSize = currentLevel.matrix.length;
+    elements.matrixContainer.style.gridTemplateColumns = `repeat(${matrixSize}, 50px)`;
+    elements.matrixContainer.style.gridTemplateRows = `repeat(${matrixSize}, 50px)`;
+    elements.matrixContainer.innerHTML = currentLevel.matrix.flat().map(cellValue => `
+        <div class="cell ${getCellClass(cellValue)}"></div>
+    `).join('');
 }
+
+function getCellClass(cellValue) {
+    const classMap = {
+        [CELL_TYPES.EMPTY]: 'white',
+        [CELL_TYPES.WALL]: 'black',
+        [CELL_TYPES.RED]: 'red',
+        [CELL_TYPES.YELLOW]: 'yellow',
+        [CELL_TYPES.GREEN]: 'green',  // Thêm dòng này để ánh xạ lớp 'green'
+        [CELL_TYPES.ORANGE]: 'orange',
+        [CELL_TYPES.PURPLE]: 'purple',
+        [CELL_TYPES.BLUE]: 'blue',
+    };
+    return classMap[cellValue] || '';
+}
+
 
 function renderCircles() {
     document.querySelectorAll('.circle').forEach(circle => circle.remove());
-
+    const matrixSize = currentLevel.matrix.length;
     circles.forEach(circle => {
-        const cellIndex = circle.x * matrixData[0].length + circle.y;
-        const cell = matrixContainer.children[cellIndex];
-
+        const cell = elements.matrixContainer.children[circle.x * matrixSize + circle.y];
         const circleElement = document.createElement('div');
-        circleElement.classList.add('circle', circle.color);
+        circleElement.className = `circle ${circle.color}`;
         cell.appendChild(circleElement);
     });
-
     checkVictory();
 }
-
 function updateTime() {
-    const now = new Date();
-    const elapsed = Math.floor((now - startTime) / 1000);
-    timeDisplay.textContent = `Time: ${elapsed}s`;
+    if (!isPaused) {
+        const currentTime = Date.now();
+        elapsedTime += currentTime - startTime;
+        startTime = currentTime;
+
+        const seconds = Math.floor(elapsedTime / 1000) % 60;
+        const minutes = Math.floor(elapsedTime / 1000 / 60) % 60;
+        const hours = Math.floor(elapsedTime / 1000 / 60 / 60);
+
+        const formattedTime =
+            `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        elements.timeDisplay.textContent = `Time: ${formattedTime}`;
+    }
+}
+
+function resetTimer() {
+    clearInterval(interval);
+    startTime = Date.now();
+    elapsedTime = 0;
+    interval = setInterval(updateTime, 1000);
+    isPaused = false;
+    updateTime();
+}
+
+function startTimer() {
+    clearInterval(interval);
+    startTime = Date.now();
+    interval = setInterval(updateTime, 1000);
+    isPaused = false;
+}
+
+
+function pauseTimer() {
+    isPaused = true;
+}
+
+function resumeTimer() {
+    if (isPaused) {
+        startTime = Date.now();
+        isPaused = false;
+    }
+}
+
+function updateMoveDisplay() {
+    elements.movesDisplay.textContent = `Moves: ${moveCount}`;
+}
+
+function updateLevelDisplay(levelIndex) {
+    elements.levelDisplay.textContent = `Level: ${levelIndex + 1}`;
 }
 
 function isCellAvailable(x, y) {
-    if (x < 0 || x >= matrixData.length || y < 0 || y >= matrixData[0].length) {
-        return false;
-    }
-
-    if (matrixData[x][y] === 1) {
-        return false;
-    }
-
-    if (circles.some(circle => circle.x === x && circle.y === y)) {
-        return false;
-    }
-
-    return true;
+    const matrixSize = currentLevel.matrix.length;
+    return x >= 0 && x < matrixSize && y >= 0 && y < matrixSize &&
+        currentLevel.matrix[x][y] !== CELL_TYPES.WALL &&
+        !circles.some(circle => circle.x === x && circle.y === y);
 }
-
-let victoryCheckTimeout = null; // To store the timeout ID
 
 function checkVictory() {
-    // Clear any existing timeout
-    if (victoryCheckTimeout) {
-        clearTimeout(victoryCheckTimeout);
+    const matrixSize = currentLevel.matrix.length;
+    const won = circles.every(circle => {
+        const cell = elements.matrixContainer.children[circle.x * matrixSize + circle.y];
+        return cell.classList.contains(circle.color);
+    });
+
+    if (won) {
+        clearInterval(interval);
+        elements.victoryModal.style.display = 'flex';
     }
-
-    // Set a timeout to check victory after 1 second
-    victoryCheckTimeout = setTimeout(() => {
-        let won = true;
-        circles.forEach(circle => {
-            const cellIndex = circle.x * matrixData[0].length + circle.y;
-            const cell = matrixContainer.children[cellIndex];
-            if (!cell.classList.contains(circle.color)) {
-                won = false;
-            }
-        });
-
-        if (won) {
-            clearInterval(interval);
-            victoryModal.style.display = 'flex';
-        }
-    }, 1000); // Check after 1 second
 }
 
-document.addEventListener('keydown', (event) => {
-    const keyName = event.key;
+function moveCircle(direction) {
+    if (isPaused) return;
 
+    let moved = false;
     circles.forEach(circle => {
-        let newX = circle.x;
-        let newY = circle.y;
-
-        switch (keyName) {
-            case 'ArrowUp':
-                newX = circle.x - 1;
-                break;
-            case 'ArrowDown':
-                newX = circle.x + 1;
-                break;
-            case 'ArrowLeft':
-                newY = circle.y - 1;
-                break;
-            case 'ArrowRight':
-                newY = circle.y + 1;
-                break;
-            default:
-                return;
-        }
+        const [dx, dy] = direction;
+        const newX = circle.x + dx;
+        const newY = circle.y + dy;
 
         if (isCellAvailable(newX, newY)) {
             circle.x = newX;
             circle.y = newY;
-            moveCount++;
-            document.getElementById('moves').textContent = `Moves: ${moveCount}`;
-            renderCircles();
+            moved = true;
         }
     });
-});
 
-resetButton.addEventListener('click', () => {
-    initialize();
-});
-
-resumeButton.addEventListener('click', () => {
-    resumeModal.style.display = 'flex';
-});
-
-continueButton.addEventListener('click', () => {
-    resumeModal.style.display = 'none';
-    if (!startTime) {
-        startTime = new Date();
-        interval = setInterval(updateTime, 1000);
+    if (moved) {
+        moveCount++;
+        updateMoveDisplay();
+        renderCircles();
     }
+}
+
+// Event Listeners
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'F5') {
+        event.preventDefault();
+        return;
+    }
+
+    const directions = {
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1]
+    };
+    const direction = directions[event.key];
+    if (direction) moveCircle(direction);
+});
+// Prevent F5 refresh
+window.addEventListener('beforeunload', (event) => {
+    event.preventDefault();
 });
 
-levelSelectionButton.addEventListener('click', () => {
-    window.location.href = 'level-selection.html'; // Modify as needed for your level selection page
+elements.resetButton.addEventListener('click', () => initializeLevel(levels.indexOf(currentLevel), false));
+elements.resumeButton.addEventListener('click', () => {
+    elements.resumeModal.style.display = 'flex';
+    pauseTimer();
+});
+elements.continueButton.addEventListener('click', () => {
+    elements.resumeModal.style.display = 'none';
+    resumeTimer();
+});
+elements.levelSelectionButton.addEventListener('click', () => {
+    window.location.href = 'index.html';
 });
 
-backButton.addEventListener('click', () => {
-    window.location.href = 'level-selection.html'; // Modify as needed for your level selection page
+elements.backButton.addEventListener('click', () => {
+    window.location.href = 'index.html';
 });
 
-backToLevelButton.addEventListener('click', () => {
-    window.location.href = 'level-selection.html'; // Modify as needed for your level selection page
+elements.backToLevelButton.addEventListener('click', () => {
+    window.location.href = 'index.html';
 });
 
 window.addEventListener('click', (event) => {
-    if (event.target === resumeModal) {
-        resumeModal.style.display = 'none';
-    }
-    if (event.target === victoryModal) {
-        victoryModal.style.display = 'none';
+    if (event.target === elements.resumeModal || event.target === elements.victoryModal) {
+        event.target.style.display = 'none';
+        if (event.target === elements.resumeModal) {
+            resumeTimer();
+        }
     }
 });
 
-initialize();
+
+// Initialize the game based on the level parameter
+function initializeGame() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const level = parseInt(urlParams.get('level')) - 1; // Trừ 1 vì mảng bắt đầu từ 0
+    if (level >= 0 && level < levels.length) {
+        initializeLevel(level, true);
+    } else {
+        // Nếu không có level hợp lệ, bắt đầu với level 1
+        initializeLevel(0, true);
+    }
+}
+
+// Initialize the first level
+initializeGame();

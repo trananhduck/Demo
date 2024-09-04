@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Matrix</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="matrix"></div>
+    <div id="info">
+        <div id="level-display">Level: 1</div>
+        <div id="time">Time: 0s</div>
+        <div id="moves">Moves: 0</div>
+        <button id="reset">Reset</button>
+        <button id="resume">Resume</button>
+        <button id="back">Back to Level Selection</button>
+    </div>
+
+    <div id="victory-modal" class="modal">
+        <div class="modal-content">
+            <p>Congratulations! You've won!</p>
+            <button id="back-to-level">Back to Level Selection</button>
+        </div>
+    </div>
+
+    <div id="resume-modal" class="modal">
+        <div class="modal-content">
+            <p>Do you want to continue or return to level selection?</p>
+            <button id="continue">Continue</button>
+            <button id="level-selection">Level Selection</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
