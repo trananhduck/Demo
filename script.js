@@ -306,6 +306,39 @@ function initializeGame() {
         initializeLevel(0, true);
     }
 }
+// Swipe detection variables
+let touchStartX = 0;
+let touchStartY = 0;
 
+document.addEventListener('touchstart', (event) => {
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+});
+
+document.addEventListener('touchend', (event) => {
+    const touch = event.changedTouches[0];
+    const touchEndX = touch.clientX;
+    const touchEndY = touch.clientY;
+
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // Horizontal swipe
+        if (dx > 0) {
+            moveCircle([0, 1]);  // Swipe right
+        } else {
+            moveCircle([0, -1]); // Swipe left
+        }
+    } else {
+        // Vertical swipe
+        if (dy > 0) {
+            moveCircle([1, 0]);  // Swipe down
+        } else {
+            moveCircle([-1, 0]); // Swipe up
+        }
+    }
+});
 // Initialize the first level
 initializeGame();
