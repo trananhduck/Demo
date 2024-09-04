@@ -45,16 +45,18 @@ body {
 .cell.green {
     background-color: green;
 }
+
 .cell.orange {
     background-color: orange;
 }
+
 .cell.purple {
     background-color: purple;
 }
+
 .cell.blue {
     background-color: blue;
 }
-
 
 .circle {
     width: 40px;
@@ -78,15 +80,19 @@ body {
 .circle.green {
     background-color: green;
 }
+
 .circle.orange {
     background-color: orange;
 }
+
 .circle.purple {
     background-color: purple;
 }
+
 .circle.blue {
     background-color: blue;
 }
+
 #info {
     margin-top: 20px;
     text-align: center;
@@ -119,4 +125,27 @@ button {
 
 .modal-content button {
     margin: 5px;
+}
+
+/* Media query for screens up to 600px wide */
+@media (max-width: 600px) {
+    #matrix {
+        grid-template-columns: repeat(4, 30px);
+        grid-template-rows: repeat(4, 30px);
+    }
+
+    .cell {
+        width: 50px;
+        height: 30px;
+    }
+
+    .circle {
+        width: 25px;
+        height: 25px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px;
+    }
 }
