@@ -40,6 +40,8 @@ body {
 .cell.orange { background-color: orange; }
 .cell.purple { background-color: purple; }
 .cell.blue { background-color: blue; }
+.cell.pink { background-color: pink
+    ; }
 
 .circle {
     width: var(--circle-size);
@@ -58,6 +60,7 @@ body {
 .circle.orange { background-color: orange; }
 .circle.purple { background-color: purple; }
 .circle.blue { background-color: blue; }
+.circle.pink { background-color: pink; }
 
 #info {
     margin-top: 20px;

@@ -175,7 +175,7 @@ function getCellClass(cellValue) {
         [CELL_TYPES.WALL]: 'black',
         [CELL_TYPES.RED]: 'red',
         [CELL_TYPES.YELLOW]: 'yellow',
-        [CELL_TYPES.GREEN]: 'green',  // Thêm dòng này để ánh xạ lớp 'green'
+        [CELL_TYPES.GREEN]: 'green',  
         [CELL_TYPES.ORANGE]: 'orange',
         [CELL_TYPES.PURPLE]: 'purple',
         [CELL_TYPES.BLUE]: 'blue',
