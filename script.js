@@ -8,6 +8,7 @@ const CELL_TYPES = {
     ORANGE: 'D',
     PURPLE: 'E',
     BLUE: 'F',
+    PINK: 'G'
 };
 
 // Game state
@@ -94,8 +95,39 @@ const levels = [
             { x: 0, y: 7, color: 'purple' },
             { x: 3, y: 7, color: 'blue' },
         ]
+    },
+    {
+        matrix: [
+            ['F', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'G'],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'C'],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 0, "B", 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'D'],
+
+
+        ],
+        initialCircles: [
+            { x: 1, y: 6, color: 'red' },
+            { x: 3, y: 6, color: 'yellow' },
+            { x: 5, y: 6, color: 'green' },
+            { x: 7, y: 6, color: 'orange' },
+            { x: 9, y: 6, color: 'purple' },
+            { x: 11, y: 6, color: 'blue' },
+            { x: 13, y: 7, color: 'pink' },
+        ]
     }
 ];
+
 
 function initializeLevel(levelIndex, resetTime = false) {
     currentLevel = levels[levelIndex];
@@ -110,17 +142,33 @@ function initializeLevel(levelIndex, resetTime = false) {
     renderMatrix();
     renderCircles();
     updateLevelDisplay(levelIndex);
+    adjustCellAndCircleSize(levelIndex);
 }
 
 function renderMatrix() {
     const matrixSize = currentLevel.matrix.length;
-    elements.matrixContainer.style.gridTemplateColumns = `repeat(${matrixSize}, 50px)`;
-    elements.matrixContainer.style.gridTemplateRows = `repeat(${matrixSize}, 50px)`;
+    const cellSize = getCellSize(levels.indexOf(currentLevel));
+    elements.matrixContainer.style.gridTemplateColumns = `repeat(${matrixSize}, ${cellSize}px)`;
+    elements.matrixContainer.style.gridTemplateRows = `repeat(${matrixSize}, ${cellSize}px)`;
     elements.matrixContainer.innerHTML = currentLevel.matrix.flat().map(cellValue => `
         <div class="cell ${getCellClass(cellValue)}"></div>
     `).join('');
 }
+function getCellSize(levelIndex) {
+    return levelIndex <= 2 ? 50 : 30;
+}
 
+function getCircleSize(levelIndex) {
+    return levelIndex <= 2 ? 40 : 20;
+}
+function adjustCellAndCircleSize(levelIndex) {
+    const cellSize = getCellSize(levelIndex);
+    const circleSize = getCircleSize(levelIndex);
+
+    // Update CSS variables
+    document.documentElement.style.setProperty('--cell-size', `${cellSize}px`);
+    document.documentElement.style.setProperty('--circle-size', `${circleSize}px`);
+}
 function getCellClass(cellValue) {
     const classMap = {
         [CELL_TYPES.EMPTY]: 'white',
@@ -131,6 +179,7 @@ function getCellClass(cellValue) {
         [CELL_TYPES.ORANGE]: 'orange',
         [CELL_TYPES.PURPLE]: 'purple',
         [CELL_TYPES.BLUE]: 'blue',
+        [CELL_TYPES.PINK]: 'pink',
     };
     return classMap[cellValue] || '';
 }
@@ -139,14 +188,18 @@ function getCellClass(cellValue) {
 function renderCircles() {
     document.querySelectorAll('.circle').forEach(circle => circle.remove());
     const matrixSize = currentLevel.matrix.length;
+    const circleSize = getCircleSize(levels.indexOf(currentLevel));
     circles.forEach(circle => {
         const cell = elements.matrixContainer.children[circle.x * matrixSize + circle.y];
         const circleElement = document.createElement('div');
         circleElement.className = `circle ${circle.color}`;
+        circleElement.style.width = `${circleSize}px`;
+        circleElement.style.height = `${circleSize}px`;
         cell.appendChild(circleElement);
     });
     checkVictory();
 }
+
 function updateTime() {
     if (!isPaused) {
         const currentTime = Date.now();
@@ -298,11 +351,10 @@ window.addEventListener('click', (event) => {
 // Initialize the game based on the level parameter
 function initializeGame() {
     const urlParams = new URLSearchParams(window.location.search);
-    const level = parseInt(urlParams.get('level')) - 1; // Trừ 1 vì mảng bắt đầu từ 0
+    const level = parseInt(urlParams.get('level')) - 1;
     if (level >= 0 && level < levels.length) {
         initializeLevel(level, true);
     } else {
-        // Nếu không có level hợp lệ, bắt đầu với level 1
         initializeLevel(0, true);
     }
 }
