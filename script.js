@@ -30,103 +30,17 @@ const elements = {
     levelDisplay: document.getElementById('level-display')
 };
 
-// Level configurations
-const levels = [
-    {
-        matrix: [
-            ['C', 1, 0, 'A'],
-            [0, 0, 0, 1],
-            [0, 0, 1, 0],
-            [0, 0, 0, 'B']
-        ],
-        initialCircles: [
-            { x: 3, y: 0, color: 'red' },
-            { x: 1, y: 0, color: 'yellow' },
-            { x: 1, y: 2, color: 'green' }
-        ]
-    },
-    {
-        matrix: [
-            [0, 'C', 1, 0, 'A'],
-            [0, 0, 0, 1, 0],
-            ['B', 0, 1, 0, 0],
-            [0, 0, 'D', 0, 1],
-            [1, 0, 0, 0, 0]
-        ],
-        initialCircles: [
-            { x: 1, y: 2, color: 'red' },
-            { x: 2, y: 4, color: 'yellow' },
-            { x: 3, y: 1, color: 'green' },
-            { x: 4, y: 4, color: 'orange' }
-        ]
-    },
-    {
-        matrix: [
-            [0, 'D', 1, 0, 0, 'A'],
-            [0, 1, 0, 0, 1, 0],
-            [0, 0, 0, 1, 0, "C"],
-            [1, 0, 1, 0, 0, 1],
-            [0, 'B', 0, 0, 1, 0],
-            [0, 1, 0, 0, 0, 0]
-        ],
-        initialCircles: [
-            { x: 2, y: 1, color: 'red' },
-            { x: 2, y: 4, color: 'yellow' },
-            { x: 5, y: 5, color: 'green' },
-            { x: 3, y: 4, color: 'orange' },
-        ]
-    },
-    {
-        matrix: [
-            [0, 'C', 1, 0, 'D', 0, 0, 0],
-            [0, 1, 0, 0, 1, 0, 1, 1],
-            [0, 'B', 0, 0, 0, 0, 0, 0],
-            [1, 0, 1, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 1, 0, 1, 1],
-            [0, 1, 0, 0, 0, 'E', 1, 0],
-            [1, 0, 0, 0, 1, 0, 0, 0],
-            [0, 'A', 0, 1, 0, 0, 0, 'F']
-        ],
-        initialCircles: [
-            { x: 2, y: 1, color: 'red' },
-            { x: 6, y: 2, color: 'yellow' },
-            { x: 5, y: 5, color: 'green' },
-            { x: 3, y: 4, color: 'orange' },
-            { x: 0, y: 7, color: 'purple' },
-            { x: 3, y: 7, color: 'blue' },
-        ]
-    },
-    {
-        matrix: [
-            ['F', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'G'],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'C'],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'],
-            [0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 0, "B", 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'D'],
+fetch('levels.json')
+    .then(response => response.json())
+    .then(data => {
+        // Set the levels data
+        levels = data;
 
+        // Initialize the game or perform other operations
+        initializeGame();
+    })
+    .catch(error => console.error('Error loading levels:', error));
 
-        ],
-        initialCircles: [
-            { x: 1, y: 6, color: 'red' },
-            { x: 3, y: 6, color: 'yellow' },
-            { x: 5, y: 6, color: 'green' },
-            { x: 7, y: 6, color: 'orange' },
-            { x: 9, y: 6, color: 'purple' },
-            { x: 11, y: 6, color: 'blue' },
-            { x: 13, y: 7, color: 'pink' },
-        ]
-    }
-];
 
 
 function initializeLevel(levelIndex, resetTime = false) {
@@ -175,7 +89,7 @@ function getCellClass(cellValue) {
         [CELL_TYPES.WALL]: 'black',
         [CELL_TYPES.RED]: 'red',
         [CELL_TYPES.YELLOW]: 'yellow',
-        [CELL_TYPES.GREEN]: 'green',  
+        [CELL_TYPES.GREEN]: 'green',
         [CELL_TYPES.ORANGE]: 'orange',
         [CELL_TYPES.PURPLE]: 'purple',
         [CELL_TYPES.BLUE]: 'blue',
@@ -394,3 +308,8 @@ document.addEventListener('touchend', (event) => {
 });
 // Initialize the first level
 initializeGame();
+
+// Disable viewport shifting on swipe
+document.addEventListener('touchmove', (event) => {
+    event.preventDefault(); // Prevent scrolling on touch swipe
+}, { passive: false });

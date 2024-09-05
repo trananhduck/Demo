@@ -95,3 +95,36 @@ button {
 .modal-content button {
     margin: 5px;
 }
+/* General mobile styles */
+@media (max-width: 600px) {
+    :root {
+        --cell-size: 30px; /* Smaller cell size for mobile */
+        --circle-size: 20px;
+    }
+
+    body {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    #matrix {
+        width: 90vw;
+        height: auto;
+    }
+
+    button {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    #info {
+        margin: 10px 0;
+    }
+
+    .modal-content {
+        width: 80vw;
+    }
+}
