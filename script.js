@@ -42,7 +42,6 @@ fetch('levels.json')
     .catch(error => console.error('Error loading levels:', error));
 
 
-
 function initializeLevel(levelIndex, resetTime = false) {
     currentLevel = levels[levelIndex];
     circles = JSON.parse(JSON.stringify(currentLevel.initialCircles)); // Deep copy
